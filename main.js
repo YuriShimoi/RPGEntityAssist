@@ -61,26 +61,33 @@ class BaseEntityPlugin {
 class LevelPlugin extends BaseEntityPlugin {
     constructor() {
         super();
-        this.__total_xp__ = 0;
-        this.__level_up__ = () => {};
+        this.__total_xp__   = 0;
+        this.__level_up__   = () => {};
+        this.__level_down__ = () => {};
     }
     
     //#region [GET/SET]
     get level() { return this.levelByXpFormula(this.__total_xp__) }
-    set level(lv) { this._checkLevelUp(() => { this.__total_xp__ = this.xpByLevelFormula(lv) + this.experience }) }
+    set level(lv) { this._checkLevelChange(() => { this.__total_xp__ = this.xpByLevelFormula(lv) + this.experience }) }
 
     get levelUpEvent() { return this.__level_up__ }
     set levelUpEvent(lu) { this.__level_up__ = lu }
 
+    get levelDownEvent() { return this.__level_down__ }
+    set levelDownEvent(ld) { this.__level_down__ = ld }
+
     get experience() { return this.__total_xp__ - this.xpByLevelFormula(this.level) }
-    set experience(xp) { this._checkLevelUp(() => { this.__total_xp__ += xp - this.experience }) }
+    set experience(xp) { this._checkLevelChange(() => { this.__total_xp__ += xp - this.experience }) }
 
     get total_experience() { return this.__total_xp__ }
-    set total_experience(xp) { this._checkLevelUp(() => { this.__total_xp__ = xp }) }
+    set total_experience(xp) { this._checkLevelChange(() => { this.__total_xp__ = xp }) }
     //#endregion
 
     /**
      * Function that calculates the level based on given total experience.
+     * 
+     * *Overwrite this method to set a custom formula.*
+     * *Alternatively you can also make some sort of hash table between xp and level.*
      * 
      * @param {Number} xp - Total experience
      * @returns Level calculated by total experience.
@@ -92,6 +99,9 @@ class LevelPlugin extends BaseEntityPlugin {
     /**
      * Function that calculates the total experience based on given level plus remaining experience.
      * 
+     * *Overwrite this method to set a custom formula.*
+     * *Alternatively you can also make some sort of hash table between xp and level.*
+     * 
      * @param {Number} lv - Level
      * @returns Total experience calculated by level.
      */
@@ -100,13 +110,13 @@ class LevelPlugin extends BaseEntityPlugin {
     }
 
     /**
-     * Internal class that receives an function instance that changes the experience, if level becomes higher calls for levelUpEvent.
+     * Internal class that receives an function instance that changes the experience, if level changes calls for level events.
      * 
      * *That's an internal function, you not supposed to be calling this, make sure you are not committing any mistake.*
      * 
      * @param {Function} xpMutation - Function instance to be run and is expected to change this.experience
      */
-    _checkLevelUp(xpMutation) {
+    _checkLevelChange(xpMutation) {
         let level_bef = this.level;
         xpMutation();
         let level_now = this.level;
@@ -114,6 +124,11 @@ class LevelPlugin extends BaseEntityPlugin {
         if(level_bef < level_now) {
             for(let level = level_bef+1; level <= level_now; level++) {
                 this.levelUpEvent(level, this);
+            }
+        }
+        else if(level_bef > level_now) {
+            for(let level = level_bef-1; level >= level_now; level--) {
+                this.levelDownEvent(level, this);
             }
         }
     }
