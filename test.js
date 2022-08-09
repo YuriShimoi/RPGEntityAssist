@@ -1,6 +1,6 @@
 class Player extends EntityBase {
     constructor(name) {
-        super([LevelPlugin, SkillPlugin]);
+        super([LevelPlugin, HealthPlugin, InventoryPlugin, SkillPlugin]);
         this.name = name;
 
         this.addSkill(new Tackle);
