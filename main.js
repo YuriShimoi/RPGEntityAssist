@@ -57,21 +57,26 @@ class BaseEntityPlugin {
 
 
 
+//#region Default Plugins
 class LevelPlugin extends BaseEntityPlugin {
     constructor() {
         super();
         this.__total_xp__ = 0;
+        this.__level_up__ = () => {};
     }
     
     //#region [GET/SET]
     get level() { return this.levelByXpFormula(this.__total_xp__) }
-    set level(lv) { this.total_experience = this.xpByLevelFormula(lv) + this.experience }
+    set level(lv) { this._checkLevelUp(() => { this.__total_xp__ = this.xpByLevelFormula(lv) + this.experience }) }
+
+    get levelUpEvent() { return this.__level_up__ }
+    set levelUpEvent(lu) { this.__level_up__ = lu }
 
     get experience() { return this.__total_xp__ - this.xpByLevelFormula(this.level) }
-    set experience(xp) { this.__total_xp__ += xp - this.experience }
+    set experience(xp) { this._checkLevelUp(() => { this.__total_xp__ += xp - this.experience }) }
 
     get total_experience() { return this.__total_xp__ }
-    set total_experience(xp) { this.__total_xp__ = xp }
+    set total_experience(xp) { this._checkLevelUp(() => { this.__total_xp__ = xp }) }
     //#endregion
 
     /**
@@ -93,4 +98,51 @@ class LevelPlugin extends BaseEntityPlugin {
     xpByLevelFormula(lv) {
         return Math.floor(lv*20);
     }
+
+    /**
+     * Internal class that receives an function instance that changes the experience, if level becomes higher calls for levelUpEvent.
+     * 
+     * *That's an internal function, you not supposed to be calling this, make sure you are not committing any mistake.*
+     * 
+     * @param {Function} xpMutation - Function instance to be run and is expected to change this.experience
+     */
+    _checkLevelUp(xpMutation) {
+        let level_bef = this.level;
+        xpMutation();
+        let level_now = this.level;
+
+        if(level_bef < level_now) {
+            for(let level = level_bef+1; level <= level_now; level++) {
+                this.levelUpEvent(level, this);
+            }
+        }
+    }
 }
+
+class HealthPlugin extends BaseEntityPlugin {
+    constructor() {
+        super();
+        this.__health__ = { 'remain': 100, 'max': 100 };
+
+        this.__health_end__ = () => {};
+    }
+
+    //#region [GET/SET]
+    get health() { return this.__health__.remain }
+    set health(ht) { this.__health__.remain = ht; if(this.__health__.remain <= 0) this.healthEndEvent() }
+
+    get max_health() { return this.__health__.max }
+    set max_health(us) { this.__health__.max = us }
+
+    get healthEndEvent() { return this.__health_end__ }
+    set healthEndEvent(he) { this.__health_end__ = he }
+    //#endregion
+
+    /**
+     * Restore the health to its max.
+     */
+    restoreHealth() {
+        this.health = this.max_health;
+    }
+}
+//#endregion
