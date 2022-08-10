@@ -110,7 +110,7 @@ class LevelPlugin extends BaseEntityPlugin {
     }
 
     /**
-     * Internal class that receives an function instance that changes the experience, if level changes calls for level events.
+     * Internal class that receives an function instance that changes the experience, if changes calls for level events.
      * 
      * *That's an internal function, you not supposed to be calling this, make sure you are not committing any mistake.*
      * 

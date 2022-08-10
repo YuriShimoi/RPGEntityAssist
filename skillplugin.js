@@ -13,9 +13,9 @@ class SkillPlugin extends BaseEntityPlugin {
     //#endregion
 
     /**
-     * Add given skill to this.skills.
+     * Add given new skill to this.skills.
      * 
-     * @param {SkillBase} skill - Skill to be added to this.skills, must inherit from SkillBase
+     * @param {SkillBase} skill - Must be an instance that extends SkillBase
      */
     addSkill(skill) {
         if(!(skill instanceof SkillBase)) throw TypeError("Must extends SkillBase.");
@@ -23,7 +23,7 @@ class SkillPlugin extends BaseEntityPlugin {
     }
 
     /**
-     * Removes given skill from this.skills.
+     * Removes the skill with the given name.
      * 
      * @param {String} skill_name - Skill name used to evoke from this.skills
      */
@@ -34,7 +34,7 @@ class SkillPlugin extends BaseEntityPlugin {
 
 class SkillBase {
     constructor(name="", description="") {
-        this.id = 'S'+(new Date().getTime()*10 + parseInt(Math.random()*9)).toString(36);
+        this.id = 'Sk'+(new Date().getTime()*10 + parseInt(Math.random()*9)).toString(36);
 
         this.name = name || this.id;
         this.description = description;
