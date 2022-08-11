@@ -70,8 +70,8 @@ class InventoryBase {
 
     /**
      * Try add the item to the inventory, returns the amount added following the below logic:
-     * - Search if already has any amount of the same item using *item.equalityCheck(item)*
-     * that by default is "this.name === item.name", that method is supposed to be overwritten in inheritance if needed;
+     * - Search if already has any amount of the same item using *item.equalityCheck(item)*,
+     * that method is supposed to be overwritten in inheritance if needed;
      * - Try add the amount to existent stack if exists, if has any or the amount reach the limit
      * search for the next stack or the first free index in the inventory;
      * - Loop trough first and second steps until all the required amount is over or has no space available.
@@ -176,7 +176,7 @@ class InventoryBase {
     /**
      * Search in the inventory for the given item and return the amount founded.
      * 
-     * @param {*} item - Requires an instance to make use of *item.equalityCheck*
+     * @param {InventoryItemBase} item - Requires an instance to make use of *item.equalityCheck*
      * @returns {Number} Amount found in inventory
      */
     hasItem(item) {
@@ -272,11 +272,12 @@ class InventoryItemStackBase {
 }
 
 class InventoryItemBase {
-    constructor(name="", description="") {
+    constructor(name="", description="", modifier=null) {
         this.id = 'It'+(new Date().getTime()*10 + parseInt(Math.random()*9)).toString(36);
 
-        this.name = name;
+        this.name        = name;
         this.description = description;
+        this.modifier    = modifier || new InventoryItemModifierBase();
 
         this.__categories__ = [];
     }
@@ -288,6 +289,13 @@ class InventoryItemBase {
             if(!(ct[c] instanceof InventoryItemCategoryBase)) throw TypeError("Must inherit from InventoryItemCategoryBase.");
         }
         this.__categories__ = {...ct};
+    }
+
+    get modifier() { this.__modifiers__.join(Object.values(this.categories).map(c => c.modifier)) }
+    set modifier(md) {
+        if(!(md instanceof InventoryItemModifierBase) && md instanceof Object) md = new InventoryItemModifierBase(md);
+        if(!(md instanceof InventoryItemModifierBase)) throw TypeError("Must inherit from InventoryItemModifierBase or be a hash table.");
+        this.__modifiers__ = md;
     }
     //#endregion
 
@@ -311,21 +319,115 @@ class InventoryItemBase {
     }
 
     /**
+     * Add or update props to Item modifier.
+     * 
+     * @param {Object} props - Must be an hash table
+     */
+    setModifier(props={}) {
+        this.__modifiers__.add(props);
+    }
+
+    /**
+     * Remove props from Item modifier, do not remove from category inherited ones.
+     * 
+     * @param {String | String[]} prop_names - Prop name or a list of prop names
+     */
+    removeModifier(prop_names=[]) {
+        if(prop_names instanceof String) prop_names = [prop_names];
+        this.__modifiers__.remove(prop_names);
+    }
+
+    /**
      * Checks the equality rule and returns if the given item is considered the same as this item.
      * 
      * @param {InventoryItemBase} item - Must inherit from InventoryItemBase
      * @returns If is the same item
      */
     equalityCheck(item) {
-        return this.name === item.name;
+        return item instanceof InventoryItemBase
+            && this.name === item.name
+            && Object.keys(this.categories).length === Object.keys(item.categories).length
+            && Object.keys(this.categories).every(c => Object.keys(item.categories).includes(c));
     }
 }
 
 class InventoryItemCategoryBase {
-    constructor(name="") {
+    constructor(name="", modifier=null) {
         this.id = 'Ic'+(new Date().getTime()*10 + parseInt(Math.random()*9)).toString(36);
 
-        this.name = name;
+        this.name     = name;
+        this.modifier = modifier || new InventoryItemModifierBase();
+    }
+
+    //#region [GET/SET]
+    get modifier() { return this.__modifiers__ }
+    set modifier(md) {
+        if(!(md instanceof InventoryItemModifierBase) && md instanceof Object) md = new InventoryItemModifierBase(md);
+        if(!(md instanceof InventoryItemModifierBase)) throw TypeError("Must inherit from InventoryItemModifierBase or be a hash table.");
+        this.__modifiers__ = md;
+    }
+    //#endregion
+}
+
+class InventoryItemModifierBase {
+    constructor(props={}) {
+        Object.keys(props).forEach(p => {
+            this[p] = props[p];
+        });
+        this.__props__ = props;
+    }
+
+    /**
+     * Add or update props to this modifier.
+     * 
+     * @param {Object} props - Must be an hash table
+     */
+    setProps(props) {
+        Object.keys(props).forEach(p => {
+            this.__props__[p] = props[p];
+            this[p] = this.__props__[p];
+        });
+    }
+
+    /**
+     * Remove props from this modifier.
+     * 
+     * @param {String | String[]} prop_names - Prop name or a list of prop names
+     */
+    removeProps(prop_names) {
+        if(prop_names instanceof String) prop_names = [prop_names];
+        prop_names.forEach(p => {
+            delete this.__props__[p];
+            delete this[p];
+        });
+    }
+
+    /**
+     * Returns a new instance of modifier that sum every possible prop and basic changes just affect this modifier.
+     * 
+     * @param {InventoryItemModifierBase | InventoryItemModifierBase[]} modifiers - Instances to join props
+     * @returns temporary modifier object that holds every prop from this plus given modifiers
+     */
+    joinModifiers(modifiers) {
+        if(!(modifiers instanceof Array)) modifiers = [modifiers];
+        if(modifiers.some(m => !(m instanceof InventoryItemModifierBase))) throw TypeError("Must inherit from InventoryItemModifierBase.");
+        let props = modifiers.reduce((acc, m) => acc = {...acc, ...m.__props__}, {});
+        return new InventoryItemModifierHolderBase(this, props);
+    }
+}
+
+class InventoryItemModifierHolderBase {
+    constructor(parentModifier, addon_props) {
+        this.__parent__ = parentModifier;
+        this.__addon__  = addon_props;
+
+        this.#mergeProps();
+    }
+
+    #mergeProps() {
+        this.__parent__.__props__.forEach(p => {
+            
+        });
     }
 }
 

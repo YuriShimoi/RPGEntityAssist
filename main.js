@@ -5,7 +5,7 @@ class EntityBase {
     /**
      * Super constructor that implements the given list of plugins.
      * 
-     * @param {[BaseEntityPlugin]} plugins - Array of plugins that inherit from BaseEntityPlugin 
+     * @param {BaseEntityPlugin[]} plugins - Array of plugins that inherit from BaseEntityPlugin 
      */
     constructor(plugins) {
         if(!(plugins instanceof Array))
