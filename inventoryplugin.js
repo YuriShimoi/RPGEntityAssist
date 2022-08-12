@@ -52,8 +52,8 @@ class InventoryBase {
     }
 
     //#region [GET/SET]
-    get items() { return this.__item_list__ }
-    set items(it) {
+    get slot() { return this.__item_list__ }
+    set slot(it) {
         it.forEach(i => {
             if(!(i instanceof InventoryItemStackBase)) throw TypeError("Must inherit from InventoryItemStackBase.")}
         );
@@ -88,8 +88,8 @@ class InventoryBase {
 
         // add to given index
         if(index !== null) {
-            if(!this.items[index]) this.items[index] = new InventoryItemStackBase(item, 0, amount_limit);
-            let stack      = this.items[index];
+            if(!this.slot[index]) this.slot[index] = new InventoryItemStackBase(item, 0, amount_limit);
+            let stack      = this.slot[index];
             let left_space = stack.amount_limit - stack.amount;
 
             left_space       = left_space > (amount - inserted_amount)? (amount - inserted_amount): left_space;
@@ -98,7 +98,7 @@ class InventoryBase {
         }
 
         // search and add to existent equal items
-        let same_item_in_inventory = this.items.filter(s => s?.item.equalityCheck(item));
+        let same_item_in_inventory = this.slot.filter(s => s?.item.equalityCheck(item));
         for(let s in same_item_in_inventory) {
             let stack      = same_item_in_inventory[s];
             let left_space = stack.amount_limit - stack.amount;
@@ -131,9 +131,9 @@ class InventoryBase {
         if(!(stack instanceof InventoryItemStackBase)) throw TypeError("Must inherit from InventoryItemStackBase.");
 
         if(index) {
-            if(!overwrite && this.items[index]) return false;
+            if(!overwrite && this.slot[index]) return false;
             try {
-                this.items[index] = stack;
+                this.slot[index] = stack;
             }
             catch {
                 throw RangeError(`Invalid index "${index}".`);
@@ -141,8 +141,8 @@ class InventoryBase {
             return true;
         }
 
-        let firstFree = this.items.findIndex(i => !i);
-        if(firstFree !== -1) this.items[firstFree] = stack;
+        let firstFree = this.slot.findIndex(i => !i);
+        if(firstFree !== -1) this.slot[firstFree] = stack;
         return firstFree !== -1;
     }
 
@@ -156,15 +156,15 @@ class InventoryBase {
      */
     removeItem(item, amount=null, delete_if_zero=true) {
         let removed_amount = 0;
-        for(let s in this.items) {
-            if(!this.items[s]?.item.equalityCheck(item)) continue;
-            if(amount === null || this.items[s].amount <= (amount - removed_amount)) {
-                removed_amount += this.items[s].amount;
-                this.items[s].amount = 0;
-                if(delete_if_zero) delete this.items[s];
+        for(let s in this.slot) {
+            if(!this.slot[s]?.item.equalityCheck(item)) continue;
+            if(amount === null || this.slot[s].amount <= (amount - removed_amount)) {
+                removed_amount += this.slot[s].amount;
+                this.slot[s].amount = 0;
+                if(delete_if_zero) delete this.slot[s];
             }
             else {
-                this.items[s].amount -= amount - removed_amount;
+                this.slot[s].amount -= amount - removed_amount;
                 removed_amount = amount;
                 break;
             }
@@ -180,7 +180,7 @@ class InventoryBase {
      * @returns {Number} Amount found in inventory
      */
     hasItem(item) {
-        return this.items.reduce((acc, i) => acc += i?.item.equalityCheck(item)? i.amount: 0, 0);
+        return this.slot.reduce((acc, i) => acc += i?.item.equalityCheck(item)? i.amount: 0, 0);
     }
 
     /**
@@ -191,10 +191,10 @@ class InventoryBase {
      * @param {Boolean} delete_if_zero - Delete the stack if reach amount equals zero **(default: true)**
      */
     removeItemByIndex(index, amount=null, delete_if_zero=true) {
-        if(!this.items[index]) return;
-        this.items[index].amount -= amount || this.items[index].amount;
-        if(delete_if_zero && this.items[index].amount <= 0) {
-            delete this.items[index];
+        if(!this.slot[index]) return;
+        this.slot[index].amount -= amount || this.slot[index].amount;
+        if(delete_if_zero && this.slot[index].amount <= 0) {
+            delete this.slot[index];
         }
     }
 
@@ -207,10 +207,10 @@ class InventoryBase {
      * @returns {InventoryItemBase | null} Return the overwrited item if *overwrite* is set as true, else returns null
      */
     moveItem(from_index, to_index, overwrite=false) {
-        let dump = this.items[to_index];
+        let dump = this.slot[to_index];
 
-        this.items[to_index] = this.items[from_index];
-        if(!overwrite) this.items[from_index] = dump;
+        this.slot[to_index] = this.slot[from_index];
+        if(!overwrite) this.slot[from_index] = dump;
 
         return dump;
     }
@@ -288,15 +288,18 @@ class InventoryItemBase {
         for(let c in ct) {
             if(!(ct[c] instanceof InventoryItemCategoryBase)) throw TypeError("Must inherit from InventoryItemCategoryBase.");
         }
-        this.__categories__ = {...ct};
+        this.__categories__ = [...ct];
     }
 
-    get modifier() { this.__modifiers__.join(Object.values(this.categories).map(c => c.modifier)) }
+    get modifier() { return this.__modifier__.joinModifiers(this.categories.map(c => c.modifier)) }
     set modifier(md) {
         if(!(md instanceof InventoryItemModifierBase) && md instanceof Object) md = new InventoryItemModifierBase(md);
         if(!(md instanceof InventoryItemModifierBase)) throw TypeError("Must inherit from InventoryItemModifierBase or be a hash table.");
-        this.__modifiers__ = md;
+        this.__modifier__ = md;
     }
+
+    get native_modifier() { return this.__modifier__ }
+    set native_modifier(md) { this.__modifier__ = md }
     //#endregion
 
     /**
@@ -305,8 +308,8 @@ class InventoryItemBase {
      * @param {InventoryItemCategoryBase} category - Must be an instance that extends InventoryItemCategoryBase
      */
     addCategory(category) {
-        if(!(category.name instanceof InventoryItemCategoryBase)) throw TypeError("Must extends InventoryItemCategoryBase.");
-        this.__categories__[category.name] = category;
+        if(!(category instanceof InventoryItemCategoryBase)) throw TypeError("Must extends InventoryItemCategoryBase.");
+        this.__categories__.push(category);
     }
 
     /**
@@ -324,7 +327,7 @@ class InventoryItemBase {
      * @param {Object} props - Must be an hash table
      */
     setModifier(props={}) {
-        this.__modifiers__.add(props);
+        this.__modifiers__.setProps(props);
     }
 
     /**
@@ -334,7 +337,7 @@ class InventoryItemBase {
      */
     removeModifier(prop_names=[]) {
         if(prop_names instanceof String) prop_names = [prop_names];
-        this.__modifiers__.remove(prop_names);
+        this.__modifiers__.removeProps(prop_names);
     }
 
     /**
@@ -371,11 +374,13 @@ class InventoryItemCategoryBase {
 
 class InventoryItemModifierBase {
     constructor(props={}) {
-        Object.keys(props).forEach(p => {
-            this[p] = props[p];
-        });
-        this.__props__ = props;
+        this.__props__ = {};
+        this.setProps(props);
     }
+
+    //#region [GET/SET]
+    get list() { return Object.keys(this.__props__) }
+    //#endregion
 
     /**
      * Add or update props to this modifier.
@@ -385,7 +390,10 @@ class InventoryItemModifierBase {
     setProps(props) {
         Object.keys(props).forEach(p => {
             this.__props__[p] = props[p];
-            this[p] = this.__props__[p];
+            Object.defineProperty(this, p, {
+                'get': ()  => this.__props__[p],
+                'set': (v) => this.__props__[p] = v
+            });
         });
     }
 
@@ -411,23 +419,59 @@ class InventoryItemModifierBase {
     joinModifiers(modifiers) {
         if(!(modifiers instanceof Array)) modifiers = [modifiers];
         if(modifiers.some(m => !(m instanceof InventoryItemModifierBase))) throw TypeError("Must inherit from InventoryItemModifierBase.");
-        let props = modifiers.reduce((acc, m) => acc = {...acc, ...m.__props__}, {});
-        return new InventoryItemModifierHolderBase(this, props);
+        return new InventoryItemModifierHolderBase(this, modifiers);
     }
 }
 
 class InventoryItemModifierHolderBase {
-    constructor(parentModifier, addon_props) {
+    constructor(parentModifier, addon_modifiers) {
         this.__parent__ = parentModifier;
-        this.__addon__  = addon_props;
+        this.__addon__  = addon_modifiers;
 
         this.#mergeProps();
     }
 
+    //#region [GET/SET]
+    get list() { return [...new Set([...this.__parent__.list, ...this.__addon__.reduce((acc, i) => acc = [...acc, ...i.list], [])])] }
+    //#endregion
+
     #mergeProps() {
-        this.__parent__.__props__.forEach(p => {
-            
+        Object.keys(this.__parent__.__props__).forEach(prop => {
+            let prop_inner = `__${prop}__`;
+            this[prop_inner] = [this.__parent__.__props__[prop]];
+            Object.defineProperty(this, prop, {
+                'get': ()    => this.#mergeValuesRule(prop_inner, true),
+                'set': (val) => this.#changeValuesRule(prop, val, true)
+            });
         });
+
+        this.__addon__.forEach(modifier => {
+            Object.keys(modifier.__props__).forEach(prop => {
+                let prop_inner = `__${prop}__`;
+                if(prop_inner in this) this[prop_inner].push(modifier.__props__[prop]);
+                else {
+                    this[prop_inner] = [modifier.__props__[prop]];
+                    Object.defineProperty(this, prop, {
+                        'get': ()    => this.#mergeValuesRule(prop_inner, false),
+                        'set': (val) => this.#changeValuesRule(prop, val, false)
+                    });
+                }
+            });
+        })
+    }
+
+    #mergeValuesRule(prop, first_is_parent=true) {
+        if(this[prop].every(v => !isNaN(v) && v !== null && !(v instanceof Array))) {
+            return this[prop].reduce((acc, i) => acc+=i, 0);
+        }
+        else {
+            if(first_is_parent) return this[prop][0];
+            else return this[prop][this[prop].length-1];
+        }
+    }
+
+    #changeValuesRule(prop, new_value, first_is_parent=true) {
+        if(first_is_parent) this.__parent__[prop] = new_value;
     }
 }
 
