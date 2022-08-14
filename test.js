@@ -1,6 +1,6 @@
 class Player extends EntityBase {
     constructor(name) {
-        super([InventoryPlugin]);
+        super([InventoryPlugin, LevelPlugin, HealthPlugin]);
         this.name = name;
         this.inventory.addItem(new VampireDagger('Vampire Dagger', ""), 1, 1);
     }

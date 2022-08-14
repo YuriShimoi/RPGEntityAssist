@@ -1,4 +1,4 @@
-class InventoryPlugin extends BaseEntityPlugin {
+class InventoryPlugin extends EntityPluginBase {
     constructor() {
         super();
 

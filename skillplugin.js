@@ -1,4 +1,4 @@
-class SkillPlugin extends BaseEntityPlugin {
+class SkillPlugin extends EntityPluginBase {
     constructor() {
         super();
         this.__skill_list__  = {};

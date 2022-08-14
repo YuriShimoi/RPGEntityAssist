@@ -1,4 +1,4 @@
-class BossPlugin extends BaseEntityPlugin {
+class BossPlugin extends HealthPlugin {
     constructor() {
         super();
 

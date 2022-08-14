@@ -1,8 +1,8 @@
-class QuestPlugin extends BaseEntityPlugin {
-    constructor() {
+class QuestPlugin extends EntityPluginBase {
+    constructor(quests=[]) {
         super();
 
-        
+        this.__quests__ = quests;
     }
 }
 

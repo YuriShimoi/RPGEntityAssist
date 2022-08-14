@@ -5,14 +5,14 @@ class EntityBase {
     /**
      * Super constructor that implements the given list of plugins.
      * 
-     * @param {BaseEntityPlugin[]} plugins - Array of plugins that inherit from BaseEntityPlugin 
+     * @param {EntityPluginBase[]} plugins - Array of plugins that inherit from EntityPluginBase 
      */
     constructor(plugins) {
         if(!(plugins instanceof Array))
             throw TypeError("Plugins must be an array.");
         plugins.forEach(p => {
-            if(Object.getPrototypeOf(p) !== BaseEntityPlugin)
-                throw TypeError(`[${p}] must inherit from BaseEntityPlugin.`);
+            if(Object.getPrototypeOf(p) !== EntityPluginBase)
+                throw TypeError(`[${p}] must inherit from EntityPluginBase.`);
             this.#extendProperties(p);
         });
     }
@@ -25,7 +25,7 @@ class EntityBase {
         }
         for(let m in injection.method.key) {
             let method = injection.method.key[m];
-            if(!(method in this)) { // teorically do not implements BaseEntityPlugin constructor
+            if(!(method in this)) { // teorically do not implements EntityPluginBase constructor
                 let descriptor = Object.getOwnPropertyDescriptor(injection.method.val, method);
                 Object.defineProperty(this, method, descriptor);
             }
@@ -38,7 +38,7 @@ class EntityBase {
 /**
  * Base Plugin that implements injection to pass properties to EntityBase, must be inherited on new Plugins.
  */
-class BaseEntityPlugin {
+class EntityPluginBase {
     constructor() { }
 
     get injection_descriptors() {
@@ -58,7 +58,7 @@ class BaseEntityPlugin {
 
 
 //#region Default Plugins
-class LevelPlugin extends BaseEntityPlugin {
+class LevelPlugin extends EntityPluginBase {
     constructor() {
         super();
         this.__total_xp__   = 0;
@@ -134,7 +134,7 @@ class LevelPlugin extends BaseEntityPlugin {
     }
 }
 
-class HealthPlugin extends BaseEntityPlugin {
+class HealthPlugin extends EntityPluginBase {
     constructor() {
         super();
         this.__health__ = { 'remain': 100, 'max': 100 };
