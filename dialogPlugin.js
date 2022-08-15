@@ -17,3 +17,25 @@ class DialogBase {
         
     }
 }
+
+
+/**
+ * Input Example
+
+{
+    'first': [
+        {
+            'hey': {
+
+            },
+            'good night': {
+
+            },
+            'bye': {
+                'okay, bye': null
+            }
+        }
+    ]
+}
+
+*/
