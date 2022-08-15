@@ -293,7 +293,7 @@ class InventoryItemBase {
 
     get modifier() { return this.__modifier__.joinModifiers(this.categories.map(c => c.modifier)) }
     set modifier(md) {
-        if(!(md instanceof InventoryItemModifierBase) && md instanceof Object) md = new InventoryItemModifierBase(md);
+        if(!(md instanceof InventoryItemModifierBase) && md && md.constructor === Object) md = new InventoryItemModifierBase(md);
         if(!(md instanceof InventoryItemModifierBase)) throw TypeError("Must inherit from InventoryItemModifierBase or be a hash table.");
         this.__modifier__ = md;
     }
@@ -336,7 +336,7 @@ class InventoryItemBase {
      * @param {String | String[]} prop_names - Prop name or a list of prop names
      */
     removeModifier(prop_names=[]) {
-        if(prop_names instanceof String) prop_names = [prop_names];
+        if(typeof prop_names == "string") prop_names = [prop_names];
         this.__modifiers__.removeProps(prop_names);
     }
 
@@ -365,7 +365,7 @@ class InventoryItemCategoryBase {
     //#region [GET/SET]
     get modifier() { return this.__modifiers__ }
     set modifier(md) {
-        if(!(md instanceof InventoryItemModifierBase) && md instanceof Object) md = new InventoryItemModifierBase(md);
+        if(!(md instanceof InventoryItemModifierBase) && md && md.constructor === Object) md = new InventoryItemModifierBase(md);
         if(!(md instanceof InventoryItemModifierBase)) throw TypeError("Must inherit from InventoryItemModifierBase or be a hash table.");
         this.__modifiers__ = md;
     }
@@ -403,7 +403,7 @@ class InventoryItemModifierBase {
      * @param {String | String[]} prop_names - Prop name or a list of prop names
      */
     removeProps(prop_names) {
-        if(prop_names instanceof String) prop_names = [prop_names];
+        if(typeof prop_names == "string") prop_names = [prop_names];
         prop_names.forEach(p => {
             delete this.__props__[p];
             delete this[p];

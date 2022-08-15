@@ -32,3 +32,27 @@ class ModifierVampiricClass extends InventoryItemModifierBase {
         this.name = "Vampiric Class";
     }
 }
+
+
+
+class NPC1 extends EntityBase {
+    constructor(name="NPC1") {
+        super([DialogPlugin]);
+        this.name = name;
+        this.setDialogs(NPC1dialogs);
+    }
+}
+
+const NPC1dialogs = {
+    "dialog.first": [
+        {question: "hey", reply: "hey, what can i help?", next: [
+            {question: "need supplies", reply: "ok, here", response: 1},
+            {question: "nothing, bye", reply: "are you sure?", next: ["dialog.first", 2]}
+        ]},
+        {question: "good night", reply: "it's daytime", next: "dialog.first", hide: true},
+        {question: "bye", reply: "are you sure?", next: [
+            {question: "no", next: "dialog.first"},
+            {question: "yes", reply: "ok, bye", response: 0}
+        ]}
+    ]
+};
