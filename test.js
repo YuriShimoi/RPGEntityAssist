@@ -40,6 +40,8 @@ class NPC1 extends EntityBase {
         super([DialogPlugin]);
         this.name = name;
         this.setDialogs(NPC1dialogs);
+        this.dialog.replyEvent    = (r) => { console.log(r) };
+        this.dialog.questionEvent = (q) => { console.log(q) };
     }
 }
 
