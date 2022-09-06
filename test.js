@@ -58,3 +58,13 @@ const NPC1dialogs = {
         ]}
     ]
 };
+
+
+
+class Goblin extends EntityBase {
+    constructor() {
+        super([HealthPlugin, LootTablePlugin]);
+
+        this.addLoot(new VampireDagger('vdagger',''), 0.7);
+    }
+}
