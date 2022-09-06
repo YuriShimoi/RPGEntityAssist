@@ -1,6 +1,6 @@
 class Player extends EntityBase {
     constructor(name) {
-        super([InventoryPlugin, LevelPlugin, HealthPlugin]);
+        super([HealthPlugin, LevelPlugin, InventoryPlugin]);
         this.name = name;
         this.inventory.addItem(new VampireDagger('Vampire Dagger', ""), 1, 1);
     }
@@ -62,9 +62,11 @@ const NPC1dialogs = {
 
 
 class Goblin extends EntityBase {
-    constructor() {
-        super([HealthPlugin, LootTablePlugin]);
+    constructor(id) {
+        super([HealthPlugin, BossPlugin, LootTablePlugin], id);
 
         this.addLoot(new VampireDagger('vdagger',''), 0.7);
     }
 }
+
+g = new Goblin('mygoblin1');
