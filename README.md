@@ -1,7 +1,7 @@
 # RPG Entity Assistance
 
 Most of basic implementations in RPG-like games are pretty much the same, thing like health control, xp and level, etc. This basic framework works as a pattern for highly generic customizable code for fast building any RPG-like architecture.
-The usability is based on [base-class](#base-class) inheritance and [plugins](#plugins) that work as modules, you can check for some implementation examples in *test.js* file, be confident that you can use your already made code if has any, and just add the plugins you need as long your entities inherit from [EntityBase](#entity-base) class, same way implementations like **item classes** have a base class that can be inherited to easily convert to a framework readable object.
+The usability is based on [base-class inheritance](#entity-base) and [plugins](#plugins) that work as modules, you can check for some implementation examples in *test.js* file, be confident that you can use your already made code if has any, and just add the plugins you need as long your entities inherit from [EntityBase](#entity-base) class, same way implementations like **item classes** have a base class that can be inherited to easily convert to a framework readable object.
 
 ---
 
@@ -100,14 +100,6 @@ console.log(hero.money);
 
 ## Plugins 
 
-### Level Plugin
-
-
-
-### Health Plugin
-
-
-
 ### Boss Plugin
 
 #### Boss Stage Base
@@ -118,10 +110,30 @@ console.log(hero.money);
 
 | |
 |-|
-| ![image info](./dialogexample.png) |
+| ![image](./dialogexample.png) |
 | |
 
+```js
+const NPC1dialogs = {
+    "dialog.first": [
+        {question: "hey", reply: "hey, what can i help?", next: [
+            {question: "need supplies", reply: "ok, here", response: 1},
+            {question: "nothing, bye", reply: "are you sure?", next: ["dialog.first", 2]}
+        ]},
+        {question: "good night", reply: "it's daytime", next: "dialog.first", hide: true},
+        {question: "bye", reply: "are you sure?", next: [
+            {question: "no", next: "dialog.first"},
+            {question: "yes", reply: "ok, bye", response: 0}
+        ]}
+    ]
+};
+```
+
 #### Dialog Base
+
+
+
+### Health Plugin
 
 
 
@@ -137,9 +149,21 @@ console.log(hero.money);
 
 
 
+### Level Plugin
+
+
+
 ### LootTable Plugin
 
 #### LootTable Base
+
+
+
+### Quest Plugin
+
+#### Quest Base
+
+#### Quest Line Base
 
 
 
@@ -152,11 +176,3 @@ console.log(hero.money);
 ### TradePlugin
 
 #### Trade Base
-
-
-
-### Quest Plugin
-
-#### Quest Base
-
-#### Quest Line Base
